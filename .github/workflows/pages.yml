@@ -5,11 +5,13 @@ on:
   workflow_dispatch:
 permissions:
   contents: write
+  pages: write
+  id-token: write
 concurrency:
   group: pages
   cancel-in-progress: true
 jobs:
-  build-and-publish:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,12 +21,23 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
-      # publishes dist/ to the gh-pages branch; GitHub serves that branch at ruibinray.github.io/545Days/
-      # (Settings → Pages → Source "Deploy from a branch", branch gh-pages, folder / — set automatically for a
-      # public user repository the first time the branch appears; check there if the site does not answer)
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: dist }
+      # route A — the gh-pages branch, served when Settings → Pages → Source is "Deploy from a branch" (gh-pages, /)
       - uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
           force_orphan: true
           commit_message: "deploy: ${{ github.sha }}"
+  # route B — the Actions deployment, served when Source is "GitHub Actions"; it fails harmlessly under route A
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
