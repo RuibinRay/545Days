@@ -1,0 +1,9 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`rng determinism > pins the first outputs so a future refactor cannot silently change every world 1`] = `
+[
+  1301939520,
+  3165927727,
+  2001843989,
+]
+`;

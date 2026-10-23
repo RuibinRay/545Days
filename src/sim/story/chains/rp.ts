@@ -1,0 +1,55 @@
+/** Red Plague — the fever (M6). Data only; the DSL is in ../chains.ts and the scheduler in ../scheduler.ts. */
+import type { StoryEvent } from "../chains";
+
+export const RP: StoryEvent[] = [
+  {
+    id: "rp.index", chain: "rp", title: "A merchant comes back ill",
+    earliestDay: 20, latestDay: 160,
+    required: [{ kind: "disasters", atLeast: "low" }, { kind: "civ", path: "policies.quarantine", op: "<", value: 100 }],
+    blockedBy: [{ kind: "sickTowns", min: 1, op: ">=", value: 1 }],
+    probability: 2, once: true,
+    effects: [{ kind: "infect", occupation: "merchant", count: 1 }],
+    clues: [{ grade: "rumor", text: "A merchant of {town} came back from the road with a fever and went straight to bed.", truthful: true }],
+    importance: 4,
+  },
+  {
+    id: "rp.cluster", chain: "rp", title: "A fever at the market",
+    earliestDay: 20, latestDay: 545,
+    required: [{ kind: "sickShare", op: ">=", value: 5 }],
+    blockedBy: [],
+    probability: 500, once: true,
+    effects: [{ kind: "people.belief.delta", key: "world_is_dangerous", delta: 10 }],
+    clues: [{ grade: "evidence", text: "Clinic book, {town}: the fever is spreading; {sick} people are down with it.", truthful: true }],
+    importance: 6,
+  },
+  {
+    id: "rp.spread", chain: "rp", title: "The fever crosses the river",
+    earliestDay: 20, latestDay: 545,
+    required: [{ kind: "sickTowns", min: 3, op: ">=", value: 2 }, { kind: "sickShare", op: ">=", value: 3 }],
+    blockedBy: [],
+    probability: 500, once: true,
+    effects: [],
+    clues: [{ grade: "rumor", text: "The same fever in two towns. The roads are quiet.", truthful: true }],
+    importance: 7,
+  },
+  {
+    id: "rp.overwhelm", chain: "rp", title: "The clinic is full",
+    earliestDay: 20, latestDay: 545,
+    required: [{ kind: "sickShare", op: ">=", value: 15 }],
+    blockedBy: [],
+    probability: 400, once: true,
+    effects: [{ kind: "civ.legitimacy.delta", delta: -10 }, { kind: "people.belief.delta", key: "government_is_fair", delta: -10 }],
+    clues: [{ grade: "evidence", text: "Clinic book, {town}: beds full, {sick} sick, the doctors seeing whom they can.", truthful: true }],
+    importance: 8,
+  },
+  {
+    id: "rp.cure", chain: "rp", title: "A treatment",
+    earliestDay: 30, latestDay: 545,
+    required: [{ kind: "fired", event: "rp.cluster" }, { kind: "any", of: [{ kind: "civ", path: "tech.medicine", op: ">=", value: 60 }, { kind: "civ", path: "policies.healthBudget", op: ">=", value: 3600 }] }],
+    blockedBy: [],
+    probability: 60, once: true,
+    effects: [{ kind: "civ.legitimacy.delta", delta: 10 }],
+    clues: [{ grade: "evidence", text: "The doctors of {town} have a treatment: the fever kills half as many and spreads half as fast.", truthful: true }],
+    importance: 8,
+  },
+];

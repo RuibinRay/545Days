@@ -1,0 +1,55 @@
+/** The colony — a full town founds a second (M7). Data only; the DSL is in ../chains.ts and the scheduler in ../scheduler.ts. */
+import type { StoryEvent } from "../chains";
+
+export const CO: StoryEvent[] = [
+  {
+    id: "co.crowded", chain: "co", title: "No room at the inn",
+    earliestDay: 40, latestDay: 400,
+    required: [{ kind: "crowded", value: true }, { kind: "civ", path: "settlements.length", op: "<", value: 2 }],
+    blockedBy: [],
+    probability: 120, once: true,
+    effects: [{ kind: "people.belief.delta", key: "the_town_is_full", delta: 15 }],
+    clues: [{ grade: "rumor", text: "Families in {town} sleep under the market arches; the council speaks of new land.", truthful: true }],
+    importance: 4,
+  },
+  {
+    id: "co.survey", chain: "co", title: "The surveyors",
+    earliestDay: 40, latestDay: 480,
+    required: [{ kind: "fired", event: "co.crowded" }, { kind: "civ", path: "treasury", op: ">=", value: 400000 }, { kind: "atWar", value: false }],
+    blockedBy: [{ kind: "fired", event: "civ.colony" }],
+    probability: 80, once: true,
+    effects: [{ kind: "civ.legitimacy.delta", delta: 3 }],
+    clues: [{ grade: "evidence", text: "Surveyors of {civ} have marked a site a day's walk from {town}: water, flat ground, no neighbours.", truthful: true }],
+    importance: 5,
+  },
+  {
+    id: "co.founding", chain: "co", title: "The founding",
+    earliestDay: 60, latestDay: 500,
+    required: [{ kind: "fired", event: "co.survey" }, { kind: "civ", path: "treasury", op: ">=", value: 400000 }, { kind: "atWar", value: false }],
+    blockedBy: [{ kind: "fired", event: "civ.colony" }],
+    probability: 100, once: true,
+    effects: [{ kind: "civ.colony.found" }],
+    clues: [{ grade: "evidence", text: "A column left {town} at dawn with carts, seed and the deeds to a town that does not exist yet.", truthful: true }],
+    importance: 8,
+  },
+  {
+    id: "co.hardship", chain: "co", title: "The first winter",
+    earliestDay: 60, latestDay: 545,
+    required: [{ kind: "fired", event: "civ.colony" }, { kind: "colonyPop", op: ">", value: 0 }, { kind: "recent", type: "life.death", withinDays: 20, cause: "needs" }],
+    blockedBy: [],
+    probability: 300, once: true,
+    effects: [{ kind: "civ.legitimacy.delta", delta: -8 }, { kind: "people.belief.delta", key: "the_council_wastes_lives", delta: 15 }],
+    clues: [{ grade: "rumor", text: "The settlers of {colony} buried their first dead this week; some are walking back to {town}.", truthful: true }],
+    importance: 6,
+  },
+  {
+    id: "co.thrive", chain: "co", title: "A town of its own",
+    earliestDay: 60, latestDay: 545,
+    required: [{ kind: "fired", event: "civ.colony", withinDays: 545 }, { kind: "colonyPop", op: ">=", value: 20 }],
+    blockedBy: [],
+    probability: 150, once: true,
+    effects: [{ kind: "civ.legitimacy.delta", delta: 10 }, { kind: "civ.attitude.delta", delta: 5 }],
+    clues: [{ grade: "evidence", text: "{colony} has grown past its first houses: a market of its own, and carts on the road to {town} every week.", truthful: true }],
+    importance: 6,
+  },
+];
